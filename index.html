@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intranet Discord - FiveM Server</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .navbar {
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar h1 {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .discord-icon {
+            width: 32px;
+            height: 32px;
+            background: #5865f2;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .card h2 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #4ade80;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 0.5rem;
+        }
+
+        .channel-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .channel-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.8rem;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background 0.3s ease;
+        }
+
+        .channel-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .channel-type {
+            font-size: 1.2rem;
+        }
+
+        .member-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .member-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.8rem;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .member-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .member-info {
+            flex: 1;
+        }
+
+        .member-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .member-status {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        .status-online {
+            color: #4ade80;
+        }
+
+        .status-offline {
+            color: #ef4444;
+        }
+
+        .status-away {
+            color: #f59e0b;
+        }
+
+        .announcements {
+            grid-column: 1 / -1;
+        }
+
+        .announcement-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            border-left: 4px solid #5865f2;
+        }
+
+        .announcement-header {
+            display: flex;
+            justify-content: between;
+            margin-bottom: 0.5rem;
+        }
+
+        .announcement-author {
+            font-weight: bold;
+            color: #5865f2;
+        }
+
+        .announcement-date {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        .refresh-btn {
+            background: #5865f2;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .refresh-btn:hover {
+            background: #4752c4;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            opacity: 0.7;
+        }
+
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid #5865f2;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fecaca;
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>
+            <div class="discord-icon">D</div>
+            Intranet Discord - Serveur FiveM
+        </h1>
+    </nav>
+
+    <div class="container">
+        <!-- Statistiques du serveur -->
+        <div class="card">
+            <h2>📊 Statistiques du Serveur</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalMembers">-</div>
+                    <div class="stat-label">Membres Total</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="onlineMembers">-</div>
+                    <div class="stat-label">En Ligne</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalChannels">-</div>
+                    <div class="stat-label">Salons</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalRoles">-</div>
+                    <div class="stat-label">Rôles</div>
+                </div>
+            </div>
+            <button class="refresh-btn" onclick="refreshData()">🔄 Actualiser</button>
+        </div>
+
+        <!-- Salons Discord -->
+        <div class="card">
+            <h2>💬 Salons Principaux</h2>
+            <div class="channel-list" id="channelList">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Chargement des salons...
+                </div>
+            </div>
+        </div>
+
+        <!-- Membres en ligne -->
+        <div class="card">
+            <h2>👥 Membres en Ligne</h2>
+            <div class="member-list" id="memberList">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Chargement des membres...
+                </div>
+            </div>
+        </div>
+
+        <!-- Activité récente -->
+        <div class="card">
+            <h2>🔔 Activité Récente</h2>
+            <div id="recentActivity">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Chargement de l'activité...
+                </div>
+            </div>
+        </div>
+
+        <!-- Annonces -->
+        <div class="card announcements">
+            <h2>📢 Annonces Importantes</h2>
+            <div id="announcements">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Chargement des annonces...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration - Remplacez par vos vraies données
+        const CONFIG = {
+            // Pour une vraie intégration, vous devrez utiliser votre bot Discord
+            // ou des webhooks pour récupérer les données réelles
+            serverName: "Serveur FiveM RP",
+            guildId: "VOTRE_GUILD_ID",
+            botToken: "VOTRE_BOT_TOKEN", // Ne jamais exposer en production !
+        };
+
+        // Données de démonstration
+        const mockData = {
+            stats: {
+                totalMembers: 247,
+                onlineMembers: 89,
+                totalChannels: 25,
+                totalRoles: 12
+            },
+            channels: [
+                { name: "général", type: "💬", id: "1" },
+                { name: "annonces", type: "📢", id: "2" },
+                { name: "règlement", type: "📋", id: "3" },
+                { name: "candidatures", type: "📝", id: "4" },
+                { name: "support", type: "🆘", id: "5" },
+                { name: "événements", type: "🎉", id: "6" }
+            ],
+            members: [
+                { name: "Admin_John", status: "online", avatar: "AJ" },
+                { name: "Moderator_Mike", status: "online", avatar: "MM" },
+                { name: "Player_Sarah", status: "away", avatar: "PS" },
+                { name: "Cop_David", status: "online", avatar: "CD" },
+                { name: "Medic_Emma", status: "online", avatar: "ME" },
+                { name: "Mechanic_Tom", status: "away", avatar: "MT" },
+                { name: "Civilian_Ana", status: "online", avatar: "CA" },
+                { name: "Deputy_Mark", status: "online", avatar: "DM" }
+            ],
+            announcements: [
+                {
+                    author: "Admin_John",
+                    date: "Il y a 2 heures",
+                    content: "Nouvelle mise à jour du serveur disponible ! Redémarrage prévu à 22h00."
+                },
+                {
+                    author: "Moderator_Mike",
+                    date: "Il y a 5 heures",
+                    content: "Rappel : Event spécial ce weekend. Inscriptions ouvertes sur le forum."
+                },
+                {
+                    author: "Admin_John",
+                    date: "Hier",
+                    content: "Nouvelles règles mises en place concernant les interactions RP. Consultez le règlement."
+                }
+            ],
+            recentActivity: [
+                { user: "Player_Sarah", action: "a rejoint le serveur vocal", time: "il y a 5 min" },
+                { user: "Cop_David", action: "a envoyé un message dans #général", time: "il y a 8 min" },
+                { user: "Medic_Emma", action: "a changé son statut", time: "il y a 12 min" },
+                { user: "Civilian_Ana", action: "a rejoint le serveur", time: "il y a 15 min" }
+            ]
+        };
+
+        // Fonction pour charger les données
+        function loadData() {
+            // Statistiques
+            document.getElementById('totalMembers').textContent = mockData.stats.totalMembers;
+            document.getElementById('onlineMembers').textContent = mockData.stats.onlineMembers;
+            document.getElementById('totalChannels').textContent = mockData.stats.totalChannels;
+            document.getElementById('totalRoles').textContent = mockData.stats.totalRoles;
+
+            // Salons
+            const channelList = document.getElementById('channelList');
+            channelList.innerHTML = mockData.channels.map(channel => `
+                <div class="channel-item">
+                    <span class="channel-type">${channel.type}</span>
+                    <span>${channel.name}</span>
+                </div>
+            `).join('');
+
+            // Membres
+            const memberList = document.getElementById('memberList');
+            memberList.innerHTML = mockData.members.map(member => `
+                <div class="member-item">
+                    <div class="member-avatar">${member.avatar}</div>
+                    <div class="member-info">
+                        <div class="member-name">${member.name}</div>
+                        <div class="member-status status-${member.status}">
+                            ${member.status === 'online' ? '🟢 En ligne' : 
+                              member.status === 'away' ? '🟡 Absent' : '🔴 Hors ligne'}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Activité récente
+            const recentActivity = document.getElementById('recentActivity');
+            recentActivity.innerHTML = mockData.recentActivity.map(activity => `
+                <div class="announcement-item">
+                    <div class="announcement-header">
+                        <span class="announcement-author">${activity.user}</span>
+                        <span class="announcement-date">${activity.time}</span>
+                    </div>
+                    <div>${activity.action}</div>
+                </div>
+            `).join('');
+
+            // Annonces
+            const announcements = document.getElementById('announcements');
+            announcements.innerHTML = mockData.announcements.map(announcement => `
+                <div class="announcement-item">
+                    <div class="announcement-header">
+                        <span class="announcement-author">${announcement.author}</span>
+                        <span class="announcement-date">${announcement.date}</span>
+                    </div>
+                    <div>${announcement.content}</div>
+                </div>
+            `).join('');
+        }
+
+        // Fonction pour actualiser les données
+        function refreshData() {
+            // Simuler un rechargement
+            const elements = ['channelList', 'memberList', 'recentActivity', 'announcements'];
+            elements.forEach(id => {
+                const element = document.getElementById(id);
+                element.innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Actualisation...
+                    </div>
+                `;
+            });
+
+            // Simuler un délai de chargement
+            setTimeout(() => {
+                loadData();
+            }, 1500);
+        }
+
+        // Fonction pour intégrer avec Discord (pour une vraie API)
+        async function fetchDiscordData() {
+            // Cette fonction serait utilisée pour récupérer les vraies données Discord
+            // Exemple d'utilisation avec l'API Discord :
+            /*
+            try {
+                const response = await fetch(`https://discord.com/api/v10/guilds/${CONFIG.guildId}`, {
+                    headers: {
+                        'Authorization': `Bot ${CONFIG.botToken}`
+                    }
+                });
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('Erreur lors de la récupération des données Discord:', error);
+                return null;
+            }
+            */
+        }
+
+        // Actualisation automatique toutes les 30 secondes
+        setInterval(() => {
+            loadData();
+        }, 30000);
+
+        // Chargement initial
+        window.addEventListener('DOMContentLoaded', () => {
+            loadData();
+        });
+
+        // Animations fluides
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+</html>
